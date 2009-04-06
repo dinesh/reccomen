@@ -1,0 +1,14 @@
+A Content Based Recommendation System 
+------------------------------------------------------------------------
+
+
+
+
+Todo:
+1. Feature extraction using marsyas
+2. classify and train with audio dataset
+3. dynamic k-mean implmentation from
+ --  A Music recommendation system with Dynamic K-mean 
+
+ 4. Analysis
+
