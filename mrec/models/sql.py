@@ -1,12 +1,14 @@
 from sqlalchemy import create_engine, func
-from sqlalchemy import Table, Column, Integer, String, PickleType, MetaData, ForeignKey
+from sqlalchemy import Table, Column, Integer, String, PickleType, MetaData, ForeignKey, Float, Boolean
 from sqlalchemy.orm import mapper
 from sqlalchemy.orm import relation
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 from numpy import mean, array, dot, sqrt
+import os
 
-import simreco.models.abstract
+import mrec.models.abstract
+from mrec.cfg import *
 
 class Database(object):
     __shared_state = {'session': None}
@@ -70,24 +72,25 @@ class Database(object):
 	self.clusters_table = Table(
 			'clusters',self.metadata,
 			Column('id',Integer,primary_key=True),
-			Column('radius',Float,default=0.0)
+			Column('radius',Float,default=0.0),
 			Column('numsongs',Integer,default=0),
 			Column('centriodfile',String(255)),
 			Column('tag',String(255))
 			)
 
-       self.playlists_audiofiles = Table(
+        self.playlists_audiofiles = Table(
 		       'playlists_audiofiles',self.metadata,
-		       Column('playlist_id',ForeignKey('playlist.id'))
+		       Column('playlist_id',ForeignKey('playlist.id')),
 		       Column('audiofile_id',ForeignKey('audiofiles.id'))
 		       )
 
-       self.clusters_audiofiles = Table(
+        self.clusters_audiofiles = Table(
 		       'clusters_audiofiles',self.metadata,
-		       Column('cluster_id',ForeignKey('clusters.id'))
+		       Column('cluster_id',ForeignKey('clusters.id')),
 		       Column('audiofile_id',ForeignKey('audiofiles.id'))
+		       )
        
-       self.playlist_table = Table(
+        self.playlist_table = Table(
 		       'playlist',self.metadata,
 		       Column('id',Integer,primary_key=True),
 		       Column('user_id',ForeignKey('users.id')),
@@ -120,8 +123,8 @@ class Database(object):
 	mapper(
 	      User,
 	      self.users_table,
-	      properties  {
-		      'playlists' = relation(Playlist,backref=User)
+	      properties = {
+		      'playlists' : relation(Playlist,backref=User)
 		      }
 	      )
 
@@ -129,15 +132,15 @@ class Database(object):
 	      Cluster,
 	      self.clusters_table,
 	      properties = {
-		      'files' = relation(AudioFile,secondary = self.clusters_audiofiles)
+		      'files' : relation(AudioFile,secondary = self.clusters_audiofiles)
 		      }
 	      )
 	mapper(
 	      Playlist,
 	      self.playlist_table,
 	      properties = {
-		      'files' = relation(AudioFile,secondary=self.playlists_audiofiles),
-		      'clusters' = relation(Cluster,backref=Playlist)
+		      'files' : relation(AudioFile,secondary=self.playlists_audiofiles),
+		      'clusters' : relation(Cluster,backref=Playlist)
 		      }
 	      )
 
@@ -146,7 +149,8 @@ class Database(object):
         self.__dict__ = self.__shared_state
 
         if self.session == None:
-            self.engine = create_engine('mysql://root:@localhost/simreco', echo=False)
+	    args = 'mysql://%s:%s@localhost/%s' % (db_user,db_password,db_name)
+            self.engine = create_engine(args, echo=False)
 
             self.__create_metadata();
             self.__create_mappings();
@@ -160,31 +164,42 @@ class Saveable(object):
         if self.id is None:
             db.add(self)
 
-class Plugin(Saveable, simreco.models.abstract.Plugin):
+class Plugin(Saveable, mrec.models.abstract.Plugin):
     def createVector(self, audiofile):
         return PluginOutput(self.module.createVector(audiofile.file_name), self, audiofile)
 
-class AudioFile(Saveable, simreco.models.abstract.AudioFile):
+class AudioFile(Saveable, mrec.models.abstract.AudioFile):
     pass
 
-class Tag(Saveable, simreco.models.abstract.Tag):
+class Tag(Saveable, mrec.models.abstract.Tag):
     pass
 
-class Clusters(Saveable, simreco.models.abstract.Cluster):
+class Cluster(Saveable, mrec.models.abstract.Cluster):
 	pass
 
-class Playlist(Saveable, simreco.models.abstract.Playlist):
+class Playlist(Saveable, mrec.models.abstract.Playlist):
 	pass
 
-class User(Saveable, simreco.models.abstract.User):
+class User(Saveable, mrec.models.abstract.User):
 	pass
 
-class PluginOutput(Saveable, simreco.models.abstract.PluginOutput):
+class PluginOutput(Saveable, mrec.models.abstract.PluginOutput):
     pass
 
 
 # Global framework variables
 db = Database()
+
+def populate_store(tags,depth=25):
+    dataset_dir = training_dataset
+    for tag in tags:
+	collection = open(os.path.join(dataset_dir,tag + '.mf'),'r')
+	count = 0
+	for line in collection: 
+		filename, tag = line.split()
+		print filename,tag
+		count+=1
+		if count > depth: break 
 
 def get_tags(name = None):
     """ Return a list of Tag objects. By default returns all tags.

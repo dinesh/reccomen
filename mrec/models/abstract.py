@@ -45,11 +45,11 @@ class AudioFile(object):
     Attributes:
         name
         vector
-        tags
+        tag
         generated_tags
     """
 
-    def __init__(self, file_name):
+    def __init__(self, file_name,tag=None):
         self.file_name = file_name
         self.vector = []
         self.tags = []
@@ -124,11 +124,11 @@ class Cluster(object):
       def calcuateRadius(self): pass
       def calculateCentroid(self): pass
       def getfiles(self): pass
-      def updateclusters(self)      
+      def updateclusters(self):pass      
 
 class Playlist(object):
       state = 'unclustered'
-      def __init__(self,user_id)
+      def __init__(self,user_id):
 	  self.user_id = user_id
 	  
       def cluster(self):
