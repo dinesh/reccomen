@@ -1,4 +1,6 @@
 
+import os
+
 class Plugin(object):
     """
     Plugin Object
@@ -21,6 +23,7 @@ class Plugin(object):
         if name == "module":
             # Lazy load the plugin module
             if "module" not in self.__dict__:
+		print self.module_name
                 mod = __import__(self.module_name)
                 components = self.module_name.split('.')
                 for comp in components[1:]:
@@ -52,8 +55,8 @@ class AudioFile(object):
     def __init__(self, file_name,tag=None):
         self.file_name = file_name
         self.vector = []
-        self.tags = []
-        self.generated_tags = []
+	self.tag = tag
+    
 
     def __repr__(self):
         return "<AudioFile('%s')>" % (self.file_name)
@@ -72,7 +75,7 @@ class Tag(object):
     def __init__(self, name):
         self.name = name
         self.vector = []
-
+	
     def __repr__(self):
         return "<Tag('%s')>" % (self.name)
 
@@ -88,7 +91,7 @@ class PluginOutput(object):
     """
 
     def __init__(self, vector, plugin, audiofile):
-        self.vector = vector
+	self.vector = vector
         self.plugin = plugin
         self.file = audiofile
 
@@ -109,9 +112,12 @@ class User(object):
 
 	pass
 
+
+
 class Cluster(object):
       cutoff = 0.001
-      initial = 1 
+      initial = 1
+
       def __init__(self,tag=None):
 	 self.tag = tag
 	 self.centriod = []
@@ -128,16 +134,16 @@ class Cluster(object):
 
 class Playlist(object):
       state = 'unclustered'
-      def __init__(self,user_id):
+      def __init__(self,name, user_id,files=[]):
 	  self.user_id = user_id
-	  
-      def cluster(self):
-	  if self.state == 'unclustered': 
-		  pass
+	  self.files = files
+	  self.name = name
+	  self.clusters = []
 
-      def getfiles(self): pass
+      def addfiles(self,files): 
+	  self.files.extend[file_name]
 
-      def addfile(self,file_name): pass
+      
 
 def get_tags(name = None):
     """ Return a list of Tag objects. By default returns all tags.

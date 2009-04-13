@@ -5,7 +5,7 @@ from sqlalchemy.orm import relation
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 from numpy import mean, array, dot, sqrt
-import os
+import os,sys
 
 import mrec.models.abstract
 from mrec.cfg import *
@@ -48,17 +48,18 @@ class Database(object):
             Column('id', Integer, primary_key=True),
             Column('plugin_id', Integer, ForeignKey('plugins.id')),
             Column('audiofile_id', Integer, ForeignKey('audiofiles.id')),
-            Column('vecfile', String(255))
+            Column('vector', PickleType)
         )
-
+	
         self.audiofiles_table = Table(
             'audiofiles',
             self.metadata,
             Column('id', Integer, primary_key=True),
             Column('file_name', String(255)),
-            Column('vecfile', String(255)),
-	    Column('numplayed',Integer),
-	    Column('tag',String(255))
+            Column('vector', PickleType),
+	    Column('numplayed',Integer,default=0),
+	    Column('tag',String(255)),
+	    Column('state',String(255),default='undone')
         )
 	
 	self.users_table = Table(
@@ -74,29 +75,30 @@ class Database(object):
 			Column('id',Integer,primary_key=True),
 			Column('radius',Float,default=0.0),
 			Column('numsongs',Integer,default=0),
-			Column('centriodfile',String(255)),
-			Column('tag',String(255))
+			Column('centriod',PickleType),
+			Column('tag',String(255)),
+			Column('playlist_id',Integer,ForeignKey('playlist.id'))
 			)
 
         self.playlists_audiofiles = Table(
 		       'playlists_audiofiles',self.metadata,
-		       Column('playlist_id',ForeignKey('playlist.id')),
-		       Column('audiofile_id',ForeignKey('audiofiles.id'))
+		       Column('playlist_id',Integer,ForeignKey('playlist.id')),
+		       Column('audiofile_id',Integer,ForeignKey('audiofiles.id'))
 		       )
 
         self.clusters_audiofiles = Table(
 		       'clusters_audiofiles',self.metadata,
-		       Column('cluster_id',ForeignKey('clusters.id')),
-		       Column('audiofile_id',ForeignKey('audiofiles.id'))
+		       Column('cluster_id',Integer,ForeignKey('clusters.id')),
+		       Column('audiofile_id',Integer,ForeignKey('audiofiles.id'))
 		       )
        
         self.playlist_table = Table(
 		       'playlist',self.metadata,
 		       Column('id',Integer,primary_key=True),
-		       Column('user_id',ForeignKey('users.id')),
-		       Column('cluster_id',ForeignKey('clusters.id')),
+		       Column('name',String(255)),
+		       Column('user_id',Integer,ForeignKey('users.id')),
 		       Column('vote',Integer),
-		       Column('isclustered',Boolean)
+		       Column('state',String(255))
 		       )
 
 
@@ -124,7 +126,7 @@ class Database(object):
 	      User,
 	      self.users_table,
 	      properties = {
-		      'playlists' : relation(Playlist,backref=User)
+		      'playlists' : relation(Playlist)
 		      }
 	      )
 
@@ -140,7 +142,7 @@ class Database(object):
 	      self.playlist_table,
 	      properties = {
 		      'files' : relation(AudioFile,secondary=self.playlists_audiofiles),
-		      'clusters' : relation(Cluster,backref=Playlist)
+		      'clusters' : relation(Cluster)
 		      }
 	      )
 
@@ -166,10 +168,12 @@ class Saveable(object):
 
 class Plugin(Saveable, mrec.models.abstract.Plugin):
     def createVector(self, audiofile):
-        return PluginOutput(self.module.createVector(audiofile.file_name), self, audiofile)
+	file_name = os.path.join(training_dataset,audiofile.file_name)
+        return PluginOutput(self.module.createVector(file_name), self, audiofile)
+
 
 class AudioFile(Saveable, mrec.models.abstract.AudioFile):
-    pass
+     pass 
 
 class Tag(Saveable, mrec.models.abstract.Tag):
     pass
@@ -190,16 +194,19 @@ class PluginOutput(Saveable, mrec.models.abstract.PluginOutput):
 # Global framework variables
 db = Database()
 
-def populate_store(tags,depth=25):
+def load_collection(tags,depth=25):
     dataset_dir = training_dataset
+    list = []
     for tag in tags:
 	collection = open(os.path.join(dataset_dir,tag + '.mf'),'r')
 	count = 0
 	for line in collection: 
-		filename, tag = line.split()
-		print filename,tag
+		Filename, Tag = line.split()
 		count+=1
+		list.append((Filename,Tag))
 		if count > depth: break 
+    return list
+
 
 def get_tags(name = None):
     """ Return a list of Tag objects. By default returns all tags.
@@ -257,34 +264,31 @@ def get_plugins(name = None, module_name = None):
 
     return query.all()
 
-def get_audio_files(file_name=None, tag_names=None, include_guessed=False):
+def get_audio_files(file_name=None,tag = None, limit = None):
     """ Return a list of AudioFile objects. By default returns all audio files.
-
-    @param file_name: if provided, returns only files with a matching file name
-    @type  file_name: unicode
-
-    @param tag_names: if provided, returns only files with at least one of the provided tags
-    @type  tag_names: list of unicode objects
-
-    @param include_guessed: if provided, when looking for matching tags, includes generated_tags in the search
-    @type  include_guessed: bool
     """
+
     query = db.query(AudioFile)
-    if file_name is not None:
+    if file_name :
         query = query.filter_by(file_name=file_name)
-
-    if tag_names is not None:
-        query = query.join(AudioFile.tags)\
-                     .filter(Tag.name.in_(tag_names))\
-                     .group_by(AudioFile.id)\
-                     .having(func.count(AudioFile.id) == len(tag_names))
-        if include_guessed:
-            # TODO: Include support for the include_guessed parameter!!
-            # this is pretty integral to the functioning of the app.
-            pass
-
+    if tag: query = query.filter_by(tag=tag)
+    if limit: query = query.limit(limit)
     return query.all()
 
+def get_users(email=None,passwd=None):
+      query = db.query(User)
+      if email: query = query.filter_by(email=email)
+      if passwd: query = query.filter_by(password=passwd)
+
+      return query.all()
+
+def get_user(email,passwd):
+	try:
+	    query = db.query(User).filter_by(email=email,password=passwd)
+	    return query.one()
+	except Exception,e:
+	    print 'getuser in sql.py',e
+	    
 def get_audio_file(file_name):
     """ Return an AudioFile object. If no existing object is found, returns None.
 
@@ -323,3 +327,9 @@ def update_vector(plugin, audio_file):
     save(PO)
     return PO
 
+def get_playlists(user_id,name):
+	try:
+	    query = db.query(Playlist).filter_by(user_id = user_id, name= name)
+	    return query.one()
+	except Exception,e:
+	      print 'get_playlist in sql.py',e
