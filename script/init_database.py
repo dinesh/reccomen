@@ -16,11 +16,10 @@ if __name__ == "__main__":
 	model = mrec.models.sql
 	controller = Controller(model)
 
-	controller.initialize_store()
+#	controller.initialize_store()
 	
 	tags = ['alternative','blues','electronic','folkcountry','rock','jazz','raphiphop','pop','funksoulrnb']
-	files = model.load_collection(tags,depth=1)
-#	print files
+	files = model.load_collection(tags,depth=10)
 
 	for file in files:
 	      controller.add_file(file[0],file[1])
@@ -35,7 +34,7 @@ if __name__ == "__main__":
 	for plugin in plugins:
 		controller.add_plugin(plugin[0],plugin[1])
 	
-	controller.init_vectors()
+	controller.init_vectors(limit=10)
 
 	# create user
 	users = [
@@ -48,27 +47,23 @@ if __name__ == "__main__":
 		
 	# create playlist
 	
-	tags = ['blues']
+	tags = ['pop']
 	files = []
-	files.extend(model.get_audio_files(tag=tags[0],limit=2))
+	files.extend(model.get_audio_files(tag=tags[0],limit=10))
 	
 	user1 = model.get_user(email='btp.com',passwd='btp')
 	
 	pl = controller.add_playlist(user = user1, name='blues',audio_files=files)
 
 	print '-----------------------\n'
-	print pl,files
 	# analysis + run kmean
 	
-#	cluster = model.Cluster()
-#	for playlist in playlist:
-#	      cluster.cluster(playlist.files)
-
-
+	print pl.files
+	
 	# write to database
+	pl.start_clustering()
 
-
-	# score the top-N items
+	 # score the top-N items
 	
 
 

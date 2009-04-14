@@ -61,17 +61,33 @@ class Controller:
 
     def initialize_store(self):
 	self.model.initialize_storage()  
+    
+    
+    def add_cluster(self,playlist):
+      clusters = self.model.get_clusters(playlist.id)
+      if len(clusters)<1:
+        cl = Cluster(playlist.id)
+        cl.save()
+        return cl
+      return clusters[0]
+    
+    def init_vectors(self,plugin='charlotte',limit=10):
+      try:
+        query = self.model.db.query(AudioFile)
+        query = query.filter_by(state='undone').limit(limit)
+        files = query.all()
+      #  query = self.model.db.query(AudioFile)
+      #  query = query.filter_by(vector = None).limit(limit)
+       # files.extend(query.all())
+        print files
+        plugins = self.model.get_plugins(name=plugin)
+        for plugin in plugins:
+          for file in files:
+            po = self.model.update_vector(plugin,file)
+            file.vector = po.vector
+            file.state = 'done'
+            file.save()
+           
 
-    def init_vectors(self,plugin='charlotte'):
-	try:
-	    query = self.model.db.query(AudioFile)
-	    query.filter_by(state='undone')
-	    files = query.all()
-	    plugins = self.model.get_plugins(name=plugin)
-	    for plugin in plugins:
-	      for file in files:
-		  self.model.update_vector(plugin,file)
-
-
-	except Exception,e:
-		print 'init_vectors controller.py ',e
+      except Exception,e:
+		       print 'init_vectors controller.py ',e

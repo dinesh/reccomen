@@ -5,10 +5,11 @@ from sqlalchemy.orm import relation
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 from numpy import mean, array, dot, sqrt
-import os,sys
+import os,sys,random
 
 import mrec.models.abstract
 from mrec.cfg import *
+from mrec import utils
 
 class Database(object):
     __shared_state = {'session': None}
@@ -57,9 +58,9 @@ class Database(object):
             Column('id', Integer, primary_key=True),
             Column('file_name', String(255)),
             Column('vector', PickleType),
-	    Column('numplayed',Integer,default=0),
-	    Column('tag',String(255)),
-	    Column('state',String(255),default='undone')
+	          Column('numplayed',Integer,default=0),
+	          Column('tag',String(255)),
+	          Column('state',String(255),default='undone')
         )
 	
 	self.users_table = Table(
@@ -179,10 +180,62 @@ class Tag(Saveable, mrec.models.abstract.Tag):
     pass
 
 class Cluster(Saveable, mrec.models.abstract.Cluster):
-	pass
+    
+    def add_files(self,files):
+        self.files.extend(files)
+        self.save()
+      
 
 class Playlist(Saveable, mrec.models.abstract.Playlist):
-	pass
+	
+  def start_clustering(self):
+    k = 1
+    iter = 10
+    while iter:
+      cls = self.kmean(k,cutoff)
+      p = k
+      for cl in cls: 
+        print 'Radius ==>',cl.radius  
+        if cl.radius >= rmax:
+          k+=1
+          break
+      if p == k : break
+      iter -= 1
+                    
+  def kmean(self,k,cutoff):
+          initials = random.sample(self.files,k)
+          clusters = []
+          print 'Iteration ==> ',k
+          for p in initials: 
+              clusters.append(Cluster(self.id,files=[p]))
+          while True:
+                  lists = []
+                  for c in clusters: lists.append([])
+                  for p in self.files: 
+                      smallest_distance = utils.getDistance(p.vector,clusters[0].centroid)
+                      index = 0
+                      for i in range(len(clusters[1:])):
+                          distance = utils.getDistance(p.vector, clusters[i+1].centroid)
+                          if distance < smallest_distance:
+                              smallest_distance = distance
+                              index = i+1
+            # Add this Point to that Cluster's corresponding list
+                      lists[index].append(p)
+        # Update each Cluster with the corresponding list
+        # Record the biggest centroid shift for any Cluster
+                  biggest_shift = 0.0
+                  for i in range(len(clusters)):
+                      shift = clusters[i].addfiles(lists[i])
+                      biggest_shift = max(biggest_shift, shift)
+        # If the biggest centroid shift is less than the cutoff, stop
+                  if biggest_shift < cutoff: break
+    # Return the list of Clusters
+          print 'Total clusters => ',len(clusters)
+          for cl in clusters:
+              cl.calculateRadius()
+              print '\n-------\n',cl,cl.files,cl.radius,len(cl.files)
+        
+          return clusters
 
 class User(Saveable, mrec.models.abstract.User):
 	pass
@@ -236,6 +289,11 @@ def get_tag(name):
 
     return tag
 
+def get_clusters(playlist_id=None):
+    query = db.query(Cluster)
+    if playlist_id: query = query.filter_by(playlist_id=playlist_id)
+    return query.all()
+        
 def initialize_storage():
     """ Initializes an empty storage environment.
 
