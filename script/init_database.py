@@ -34,7 +34,7 @@ if __name__ == "__main__":
 	for plugin in plugins:
 		controller.add_plugin(plugin[0],plugin[1])
 	
-	controller.init_vectors(limit=10)
+#	controller.init_vectors(limit=10)
 
 	# create user
 	users = [
@@ -47,13 +47,13 @@ if __name__ == "__main__":
 		
 	# create playlist
 	
-	tags = ['pop']
+	tags = ['rock']
 	files = []
-	files.extend(model.get_audio_files(tag=tags[0],limit=10))
+	files.extend(model.get_audio_files(tag=tags[0],limit=30))
 	
 	user1 = model.get_user(email='btp.com',passwd='btp')
 	
-	pl = controller.add_playlist(user = user1, name='blues',audio_files=files)
+	pl = controller.add_playlist(user = user1, name= 'rock' ,audio_files=files)
 
 	print '-----------------------\n'
 	# analysis + run kmean

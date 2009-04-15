@@ -247,17 +247,22 @@ class PluginOutput(Saveable, mrec.models.abstract.PluginOutput):
 # Global framework variables
 db = Database()
 
-def load_collection(tags,depth=25):
+def load_collection(tags,depth=2500):
     dataset_dir = training_dataset
     list = []
     for tag in tags:
-	collection = open(os.path.join(dataset_dir,tag + '.mf'),'r')
-	count = 0
-	for line in collection: 
-		Filename, Tag = line.split()
-		count+=1
-		list.append((Filename,Tag))
-		if count > depth: break 
+        collection = open(os.path.join(dataset_dir,tag + '.mf'),'r')
+        count = 0
+        for line in collection:
+               try:
+                   Filename, Tag = line.split()
+                   count+=1
+                   list.append((Filename,Tag))
+                   if count > depth: break
+        
+               except Exception,e:
+                   print e
+            
     return list
 
 
