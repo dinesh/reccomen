@@ -116,9 +116,7 @@ class User(object):
 
 
 class Cluster(object):
-      cutoff = 0.001
-      initial = 1
-
+    
       def __init__(self,playlist_id,files= [],tag= None):
         
         self.playlist_id = playlist_id
@@ -161,15 +159,16 @@ class Cluster(object):
       def updateclusters(self):pass      
 
 class Playlist(object):
-      state = 'unclustered'
-      def __init__(self,name, user_id,files=[]):
-	  self.user_id = user_id
-	  self.files = files
-	  self.name = name
-	  self.clusters = []
-
-      def add_files(self,files):
-          for file in files:
+    state = 'unclustered'
+    
+    def __init__(self,name, user_id,files=[]):
+        self.user_id = user_id
+        self.files = files
+        self.name = name
+        self.clusters = []
+        
+    def add_files(self,files):
+        for file in files:
               if file not in self.files:
                   self.files.append(file)
                   self.save()

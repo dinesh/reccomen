@@ -22,13 +22,13 @@ class Controller:
 	    pass
 
     def add_playlist(self,user, name, audio_files = []):
-	pls = self.model.get_playlists(user_id = user.id,name = name)
-	if not pls:
-		pl = Playlist(name= name, user_id = user.id)
-		pl.files.extend(audio_files)
-		self.model.save(pl)
-		return pl
-	return pls
+        pls = self.model.get_playlists(user_id = user.id,name = name)
+        if not pls:
+            pl = Playlist(name= name, user_id = user.id)
+            pl.files.extend(audio_files)
+            self.model.save(pl)
+            return pl
+        return pls
 
     def get_playlist(self,user_id, name):
 	pls = self.model.get_playlists(user_id=user_id,name = name)
@@ -67,7 +67,7 @@ class Controller:
       clusters = self.model.get_clusters(playlist.id)
       if len(clusters)<1:
         cl = Cluster(playlist.id)
-        cl.save()
+        # cl.save()
         return cl
       return clusters[0]
     

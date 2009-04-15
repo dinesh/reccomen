@@ -180,33 +180,28 @@ class Tag(Saveable, mrec.models.abstract.Tag):
     pass
 
 class Cluster(Saveable, mrec.models.abstract.Cluster):
-    
-    def add_files(self,files):
-        self.files.extend(files)
-        self.save()
-      
+    pass  
 
 class Playlist(Saveable, mrec.models.abstract.Playlist):
 	
-  def start_clustering(self):
+  def start_clustering(self,iter=1):
     k = 1
-    iter = 10
     while iter:
       cls = self.kmean(k,cutoff)
       p = k
       for cl in cls: 
-        print 'Radius ==>',cl.radius  
+        # print 'Radius ==>',cl.radius  
         if cl.radius >= rmax:
           k+=1
           break
       if p == k : break
       iter -= 1
-                    
+    self.clusters.extend(cls)          
 
   def kmean(self,k,cutoff):
           initials = random.sample(self.files,k)
           clusters = []
-          print 'Iteration ==> ',k
+          # print 'Iteration ==> ',k
           for p in initials: 
               clusters.append(Cluster(self.id,files=[p]))
           while True:
@@ -231,10 +226,10 @@ class Playlist(Saveable, mrec.models.abstract.Playlist):
         # If the biggest centroid shift is less than the cutoff, stop
                   if biggest_shift < cutoff: break
     # Return the list of Clusters
-          print 'Total clusters => ',len(clusters)
+          # print 'Total clusters => ',len(clusters)
           for cl in clusters:
               cl.calculateRadius()
-              print '\n-------\n',cl,cl.files,cl.radius,len(cl.files)
+              #print '\n-------\n',cl,cl.files,cl.radius,len(cl.files)
         
           return clusters
 
@@ -402,3 +397,7 @@ def get_playlists(user_id = None ,name = None):
 	
     except Exception,e:
 	      print 'get_playlist in sql.py',e
+
+
+def del_playlists(user_id= None,name =None):
+    pass

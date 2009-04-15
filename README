@@ -9,6 +9,20 @@ A Content Based Recommendation System
 
 	Dataset = 'A benchmark for automatic genre classification"
 	
+	+-------------+----------+
+	| tag         | count(*) |
+	+-------------+----------+
+	| alternative |      145 |
+	| blues       |      120 |
+	| electronic  |      113 |
+	| folkcountry |      222 |
+	| funksoulrnb |       47 |
+	| jazz        |      319 |
+	| pop         |      116 |
+	| raphiphop   |      300 |
+	| rock        |      504 |
+	+-------------+----------+
+	
 	
 3. dynamic k-mean implmentation from
  --  A Music recommendation system with Dynamic K-mean 
