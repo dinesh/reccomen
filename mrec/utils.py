@@ -17,3 +17,12 @@ def makeRandomPoint(n, lower, upper):
     return Point(coords)
 
      
+def exclude(list1,list2):
+    final = []
+    for l in list1:
+        if l not in list2:
+            final.append(l)
+    return final
+
+if __name__ == "__main__":
+    print exclude([1,2,3,4,5,6],[1,2,3])

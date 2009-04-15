@@ -20,27 +20,39 @@ if __name__ == "__main__":
     
     
     # Take 25 samples of each genres
-    frock = model.get_audio_files(tag='rock',limit=25)
-    fpop = model.get_audio_files(tag='pop',limit=25)
-    fjazz = model.get_audio_files(tag='jazz',limit=25)
-    fblues = model.get_audio_files(tag='blues',limit=25)
-    frap = model.get_audio_files(tag='raphiphop',limit=25)
-    felec = model.get_audio_files(tag='electronic',limit=25)
+    limit = 25
+    frock = model.get_audio_files(tag='rock',limit=limit)
+    fpop = model.get_audio_files(tag='pop',limit=limit)
+    fjazz = model.get_audio_files(tag='jazz',limit=limit)
+    fblues = model.get_audio_files(tag='blues',limit=limit)
+    frap = model.get_audio_files(tag='raphiphop',limit=limit)
+    felec = model.get_audio_files(tag='electronic',limit=limit)
+    ffolk = model.get_audio_files(tag='folkcountry',limit=limit)
+    ffunk = model.get_audio_files(tag='funksoulrnb',limit=limit)
+    falter = model.get_audio_files(tag='alternative',limit=limit)
     
-    files = [frock,fpop,fjazz,fblues,frap,felec]
+    files = [frock,fpop,fjazz,fblues,frap,felec,ffolk,ffunk,falter]
     
     ## Get user
     user = model.get_user('btp.com','btp')
     
     ## Make playlist
-    for i in range(1,2):
-        for Files in files:
-            # pl = controller.add_playlist(user,Files[0].tag,audio_files=Files)
-            pl = model.get_playlists(user.id,Files[0].tag)[0]
     
+    iter = 2
+    for i in range(1,iter):
+        rmax = 0
+        for Files in files:
+            #pl = controller.add_playlist(user,Files[0].tag,audio_files=Files)
+            pl = model.get_playlists(user.id,Files[0].tag)[0]
             pl.start_clustering(iter=i)
-            print pl.clusters
-#            r = 0.0
-#            for cl in pl.clusters:
-#                r += cl.radius
-#            print 'cluster==> ',i,'for ',len(Files),Files[0].tag,r/i,'\n'
+            #print pl.clusters
+            r = 0.0
+            for cl in pl.clusters:
+                print cl.radius
+                r += cl.radius
+            print 'cluster==> ',i,'for ',len(pl.clusters),Files[0].tag,r/(len(pl.clusters)),'\n'
+            rmax += r
+        print rmax/9
+        print '------------------------------'
+    user.recommend()
+    

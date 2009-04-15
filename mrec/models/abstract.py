@@ -106,14 +106,6 @@ class User(object):
 	self.password = password
 	self.playlists = []
 	
-    def getrecommendations(self,top=10):
-	"""
-	Return Top-N recommendation
-	"""
-
-	pass
-
-
 
 class Cluster(object):
     

@@ -58,9 +58,9 @@ class Database(object):
             Column('id', Integer, primary_key=True),
             Column('file_name', String(255)),
             Column('vector', PickleType),
-	          Column('numplayed',Integer,default=0),
-	          Column('tag',String(255)),
-	          Column('state',String(255),default='undone')
+	        Column('numplayed',Integer,default=0),
+	        Column('tag',String(255)),
+	        Column('state',String(255),default='undone')
         )
 	
 	self.users_table = Table(
@@ -185,8 +185,11 @@ class Cluster(Saveable, mrec.models.abstract.Cluster):
 class Playlist(Saveable, mrec.models.abstract.Playlist):
 	
   def start_clustering(self,iter=1):
-    k = 1
-    while iter:
+    k = 1 
+    while 1:
+      for cl in self.clusters:
+            db.delete(cl)
+      self.clusters = []
       cls = self.kmean(k,cutoff)
       p = k
       for cl in cls: 
@@ -196,6 +199,7 @@ class Playlist(Saveable, mrec.models.abstract.Playlist):
           break
       if p == k : break
       iter -= 1
+      
     self.clusters.extend(cls)          
 
   def kmean(self,k,cutoff):
@@ -234,8 +238,32 @@ class Playlist(Saveable, mrec.models.abstract.Playlist):
           return clusters
 
 class User(Saveable, mrec.models.abstract.User):
-	pass
+	
+    def recommend(self,playlists = [],topN=10):
+        if playlists: pls = playlists
+        else: pls = self.playlists
 
+        user_music = []
+        user_clusters = []
+        
+        for pl in pls: 
+            user_music.extend(pl.files)
+            user_clusters.extend(pl.clusters)
+        
+        final_items = []
+        
+            
+        all_music = get_audio_files()
+        recommable_items = utils.exclude(all_music,user_music)
+        for item in recommendable_items:
+            for cl in user_clusters:
+                score = getScore(item.vector,cl.centroid,len(cl.files),len(user_music))
+                
+    def getScore(self,vector,centroid,custerdata,alldata):
+        dist = utils.getDistance(vector,centroid)
+        return  clusterdata/(dist*alldata)
+    
+        
 class PluginOutput(Saveable, mrec.models.abstract.PluginOutput):
     pass
 
