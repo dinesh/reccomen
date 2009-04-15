@@ -202,6 +202,7 @@ class Playlist(Saveable, mrec.models.abstract.Playlist):
       if p == k : break
       iter -= 1
                     
+
   def kmean(self,k,cutoff):
           initials = random.sample(self.files,k)
           clusters = []
@@ -390,9 +391,14 @@ def update_vector(plugin, audio_file):
     save(PO)
     return PO
 
-def get_playlists(user_id,name):
-	try:
-	    query = db.query(Playlist).filter_by(user_id = user_id, name= name)
-	    return query.one()
-	except Exception,e:
+def get_playlists(user_id = None ,name = None):
+    try:
+        query = db.query(Playlist)
+        if user_id:
+            query = query.filter_by(user_id= user_id)
+            if name:
+                query = query.filter_by(name=name)
+	    return query.all()
+	
+    except Exception,e:
 	      print 'get_playlist in sql.py',e

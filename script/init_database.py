@@ -19,7 +19,7 @@ if __name__ == "__main__":
 #	controller.initialize_store()
 	
 	tags = ['alternative','blues','electronic','folkcountry','rock','jazz','raphiphop','pop','funksoulrnb']
-	files = model.load_collection(tags,depth=10)
+	files = model.load_collection(tags)
 
 	for file in files:
 	      controller.add_file(file[0],file[1])
@@ -44,30 +44,5 @@ if __name__ == "__main__":
 
 	for user in users:
 		controller.add_user(user[0],user[1])
-		
-	# create playlist
 	
-	tags = ['rock']
-	files = []
-	files.extend(model.get_audio_files(tag=tags[0],limit=30))
-	
-	user1 = model.get_user(email='btp.com',passwd='btp')
-	
-	pl = controller.add_playlist(user = user1, name= 'rock' ,audio_files=files)
-
-	print '-----------------------\n'
-	# analysis + run kmean
-	
-	print pl.files
-	
-	# write to database
-	pl.start_clustering()
-
-	 # score the top-N items
-	
-
-
-	# list them and show cluster
-
-
-		      
+	model.init_vectors(limit=10)

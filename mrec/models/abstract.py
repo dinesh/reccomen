@@ -168,9 +168,11 @@ class Playlist(object):
 	  self.name = name
 	  self.clusters = []
 
-      def addfiles(self,files): 
-	  self.files.extend[file_name]
-
+      def add_files(self,files):
+          for file in files:
+              if file not in self.files:
+                  self.files.append(file)
+                  self.save()
       
 
 def get_tags(name = None):
