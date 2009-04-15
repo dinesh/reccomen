@@ -91,3 +91,5 @@ class Controller:
 
       except Exception,e:
 		       print 'init_vectors controller.py ',e
+    
+    
