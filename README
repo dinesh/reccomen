@@ -23,11 +23,95 @@ A Content Based Recommendation System
 	| rock        |      504 |
 	+-------------+----------+
 	
-	
-3. dynamic k-mean implmentation from
+3. Genre similarity when clustered at rmax=6
+
+	     'alternative': {
+	              					'alternative': 0,
+                                   'blues': 44.119193097047635,
+                                   'electronic': 114.20070296873267,
+                                   'folkcountry': 27.074633933703151,
+                                   'jazz': 198.76118589760745,
+                                   'pop': 18.590094695719383,
+                                   'raphiphop': 84.463404490202024,
+                                   'rock': 211.55903457489416
+                             },
+                             
+          'blues': {         'alternative': 44.119193097047635,
+                             'blues': 0,
+                             'electronic': 118.15265970379743,
+                             'folkcountry': 43.753486200750139,
+                             'jazz': 199.29498699978427,
+                             'pop': 39.255749500578183,
+                             'raphiphop': 56.811921826386644,
+                             'rock': 201.35714417963911
+                             },
+                             
+                             
+          'electronic': {         'alternative': 114.20070296873267,
+                                  'blues': 118.15265970379743,
+                                  'electronic': 0,
+                                  'folkcountry': 110.52774788166447,
+                                  'jazz': 415.94659220195882,
+                                  'pop': 110.86374443465463,
+                                  'raphiphop': 135.17732770639171,
+                                  'rock': 424.42390579603659
+                                  },
+                                  
+                                  
+          'folkcountry': {         'alternative': 27.074633933703151,
+                                   'blues': 43.753486200750139,
+                                   'electronic': 110.52774788166447,
+                                   'folkcountry': 0,
+                                   'jazz': 188.23440382785242,
+                                   'pop': 14.912843953840197,
+                                   'raphiphop': 79.30320368024131,
+                                   'rock': 226.67235087860919},
+          
+          
+          'jazz': {         'alternative': 198.76118589760745,
+                            'blues': 199.29498699978427,
+                            'electronic': 415.94659220195882,
+                            'folkcountry': 188.23440382785242,
+                            'jazz': 0,
+                            'pop': 190.6380457275848,
+                            'raphiphop': 224.94997246161469,
+                            'rock': 1200.527183487437},
+          
+          'pop': {         'alternative': 18.590094695719383,
+                           'blues': 39.255749500578183,
+                           'electronic': 110.86374443465463,
+                           'folkcountry': 14.912843953840197,
+                           'jazz': 190.6380457275848,
+                           'pop': 0,
+                           'raphiphop': 74.621743018604292,
+                           'rock': 217.27551888821833},
+          
+          
+          'raphiphop': {         'alternative': 84.463404490202024,
+                                 'blues': 56.811921826386644,
+                                 'electronic': 135.17732770639171,
+                                 'folkcountry': 79.30320368024131,
+                                 'jazz': 224.94997246161469,
+                                 'pop': 74.621743018604292,
+                                 'raphiphop': 0,
+                                 'rock': 229.82426241624168},
+          
+          
+          'rock': {         'alternative': 211.55903457489416,
+                            'blues': 201.35714417963911,
+                            'electronic': 424.42390579603665,
+                            'folkcountry': 226.67235087860919,
+                            'jazz': 1200.527183487437,
+                            'pop': 217.27551888821833,
+                            'raphiphop': 229.82426241624168,
+                            'rock': 0}
+                            
+                            
+ 
+4. dynamic k-mean implmentation from
  --  A Music recommendation system with Dynamic K-mean 
 
-4. Analysis
+5. Analysis
    Gathering stats
    
 

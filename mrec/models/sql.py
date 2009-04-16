@@ -241,7 +241,7 @@ class Playlist(Saveable, mrec.models.abstract.Playlist):
 
 class User(Saveable, mrec.models.abstract.User):
 	
-    def recommend(self,playlists = [],topN=50):
+    def recommend(self,playlists = [],topN=20):
         if playlists: pls = playlists
         else: pls = self.playlists
 
