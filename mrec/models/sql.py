@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 from numpy import mean, array, dot, sqrt
 import os,sys,random
+from heapq import nlargest
 
 import mrec.models.abstract
 from mrec.cfg import *
@@ -76,7 +77,7 @@ class Database(object):
 			Column('id',Integer,primary_key=True),
 			Column('radius',Float,default=0.0),
 			Column('numsongs',Integer,default=0),
-			Column('centriod',PickleType),
+			Column('centroid',PickleType),
 			Column('tag',String(255)),
 			Column('playlist_id',Integer,ForeignKey('playlist.id'))
 			)
@@ -232,6 +233,7 @@ class Playlist(Saveable, mrec.models.abstract.Playlist):
     # Return the list of Clusters
           # print 'Total clusters => ',len(clusters)
           for cl in clusters:
+              cl.centroid = cl.calculateCentroid()
               cl.calculateRadius()
               #print '\n-------\n',cl,cl.files,cl.radius,len(cl.files)
         
@@ -239,7 +241,7 @@ class Playlist(Saveable, mrec.models.abstract.Playlist):
 
 class User(Saveable, mrec.models.abstract.User):
 	
-    def recommend(self,playlists = [],topN=10):
+    def recommend(self,playlists = [],topN=50):
         if playlists: pls = playlists
         else: pls = self.playlists
 
@@ -250,16 +252,41 @@ class User(Saveable, mrec.models.abstract.User):
             user_music.extend(pl.files)
             user_clusters.extend(pl.clusters)
         
-        final_items = []
         
-            
+        scores = []
         all_music = get_audio_files()
-        recommable_items = utils.exclude(all_music,user_music)
+        #all_music = each_genre_files(limit=100)
+        
+        recommendable_items = utils.exclude(all_music,user_music)
+        print len(all_music),len(recommendable_items)
+        
         for item in recommendable_items:
+            score = 0.0
+            if not item.vector: continue
             for cl in user_clusters:
-                score = getScore(item.vector,cl.centroid,len(cl.files),len(user_music))
-                
-    def getScore(self,vector,centroid,custerdata,alldata):
+                if len(cl.files) == 0: continue 
+                try:
+                    score += self.getScore(item.vector,cl.centroid,len(cl.files) ,len(user_music))
+                except Exception,e:
+                    print e
+            scores.append((score,item))
+        scores = nlargest(topN,scores,key=lambda x: x[0])
+        self.analyze(scores)
+            
+    def analyze(self,items):
+        
+        tags = {'alternative':0,'blues':0,'electronic':0,'folkcountry':0,'rock':0,'jazz':0,'raphiphop':0,'pop':0,'funksoulrnb':0}
+        n = len(items)
+        print n
+        for score,audiofile in items: 
+            filename,tag = audiofile.file_name,audiofile.tag
+            tags[tag] += 1
+        
+        
+        for tag in tags.keys():
+            print tag,'\t\t',100*tags[tag]/n,'%',tags[tag]
+                        
+    def getScore(self,vector,centroid,clusterdata,alldata):
         dist = utils.getDistance(vector,centroid)
         return  clusterdata/(dist*alldata)
     
@@ -360,7 +387,17 @@ def get_audio_files(file_name=None,tag = None, limit = None):
         query = query.filter_by(file_name=file_name)
     if tag: query = query.filter_by(tag=tag)
     if limit: query = query.limit(limit)
+   
+        
     return query.all()
+
+def each_genre_files(limit=20):
+    files= []
+    tags = ['alternative','blues','electronic','folkcountry','rock','jazz','raphiphop','pop']
+    for tag in tags:
+        files.extend(get_audio_files(tag=tag,limit=limit))
+        
+    return files
 
 def get_users(email=None,passwd=None):
       query = db.query(User)

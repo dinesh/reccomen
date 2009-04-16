@@ -28,7 +28,8 @@ class Controller:
             pl.files.extend(audio_files)
             self.model.save(pl)
             return pl
-        return pls
+        for pl in pls:
+            pl.add_files(audio_files)
 
     def get_playlist(self,user_id, name):
 	pls = self.model.get_playlists(user_id=user_id,name = name)

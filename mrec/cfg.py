@@ -8,6 +8,6 @@ db_user = 'root'
 db_name = 'simreco'
 db_password = ''
 
-rmax = 5.5
+rmax = 4
 cellsize = 0.02
-cutoff = 0.01
+cutoff = 0.125

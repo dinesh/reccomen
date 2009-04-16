@@ -1,6 +1,7 @@
 if __name__ == "__main__":
     import sys
     import os
+    import random
     parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     print parent_dir
     if parent_dir not in sys.path:
@@ -20,39 +21,43 @@ if __name__ == "__main__":
     
     
     # Take 25 samples of each genres
-    limit = 25
-    frock = model.get_audio_files(tag='rock',limit=limit)
-    fpop = model.get_audio_files(tag='pop',limit=limit)
-    fjazz = model.get_audio_files(tag='jazz',limit=limit)
-    fblues = model.get_audio_files(tag='blues',limit=limit)
-    frap = model.get_audio_files(tag='raphiphop',limit=limit)
-    felec = model.get_audio_files(tag='electronic',limit=limit)
-    ffolk = model.get_audio_files(tag='folkcountry',limit=limit)
-    ffunk = model.get_audio_files(tag='funksoulrnb',limit=limit)
-    falter = model.get_audio_files(tag='alternative',limit=limit)
-    
-    files = [frock,fpop,fjazz,fblues,frap,felec,ffolk,ffunk,falter]
     
     ## Get user
     user = model.get_user('btp.com','btp')
     
     ## Make playlist
-    
     iter = 2
     for i in range(1,iter):
         rmax = 0
+        limit = 50
+        frock = model.get_audio_files(tag='rock',limit=1)
+        fpop = model.get_audio_files(tag='pop',limit=1)
+        fjazz = model.get_audio_files(tag='jazz',limit=20)
+        fblues = model.get_audio_files(tag='blues',limit=1)
+        frap = model.get_audio_files(tag='raphiphop',limit=20)
+        felec = model.get_audio_files(tag='electronic',limit=1)
+        ffolk = model.get_audio_files(tag='folkcountry',limit=1)
+        #ffunk = model.get_audio_files(tag='funksoulrnb',limit=limit)
+        falter = model.get_audio_files(tag='alternative',limit=1)
+    
+        files = [frock,fpop,fjazz,fblues,frap,felec,ffolk,falter]
+    
+        pl = controller.add_playlist(user, name= str(random.randint(1,1000)) )
+        
         for Files in files:
-            #pl = controller.add_playlist(user,Files[0].tag,audio_files=Files)
-            pl = model.get_playlists(user.id,Files[0].tag)[0]
-            pl.start_clustering(iter=i)
-            #print pl.clusters
-            r = 0.0
-            for cl in pl.clusters:
-                print cl.radius
-                r += cl.radius
-            print 'cluster==> ',i,'for ',len(pl.clusters),Files[0].tag,r/(len(pl.clusters)),'\n'
-            rmax += r
-        print rmax/9
+            pl.add_files(Files)
+            
+
+        
+        pl.start_clustering()
+        #print pl.clusters,len(pl.files)
+        r = 0.0
+        for cl in pl.clusters:
+            #print cl.radius
+            r += cl.radius
+        rmax = r
         print '------------------------------'
-    user.recommend()
+        #print 'For ',Files[0].tag,rmax
+        print 'cluster==> ',len(pl.clusters),'for ',r,'\n'
+        user.recommend(playlists=[pl])
     
