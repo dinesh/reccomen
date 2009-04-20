@@ -254,8 +254,8 @@ class User(Saveable, mrec.models.abstract.User):
         
         
         scores = []
-        all_music = get_audio_files()
-        #all_music = each_genre_files(limit=100)
+        #all_music = get_audio_files()
+        all_music = each_genre_files(limit=120)
         
         recommendable_items = utils.exclude(all_music,user_music)
         print len(all_music),len(recommendable_items)
@@ -263,15 +263,22 @@ class User(Saveable, mrec.models.abstract.User):
         for item in recommendable_items:
             score = 0.0
             if not item.vector: continue
+            smallest = 1000
             for cl in user_clusters:
                 if len(cl.files) == 0: continue 
                 try:
-                    score += self.getScore(item.vector,cl.centroid,len(cl.files) ,len(user_music))
+                    s = self.getScore(item.vector,cl.centroid,len(cl.files) ,len(user_music))
+                    score += s
+                    if s < smallest: smallest = s
+                    
                 except Exception,e:
                     print e
+            #score = smallest
+            
             scores.append((score,item))
         scores = nlargest(topN,scores,key=lambda x: x[0])
         self.analyze(scores)
+        return scores
             
     def analyze(self,items):
         

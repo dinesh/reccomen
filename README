@@ -45,6 +45,7 @@ A Content Based Recommendation System
                              'raphiphop': 56.811921826386644,
                              'rock': 201.35714417963911
                              },
+                             [folkcountry,alternative]
                              
                              
           'electronic': {         'alternative': 114.20070296873267,
@@ -76,6 +77,8 @@ A Content Based Recommendation System
                             'pop': 190.6380457275848,
                             'raphiphop': 224.94997246161469,
                             'rock': 1200.527183487437},
+                            [pop,alterbative,blues]
+                            
           
           'pop': {         'alternative': 18.590094695719383,
                            'blues': 39.255749500578183,
@@ -85,6 +88,8 @@ A Content Based Recommendation System
                            'pop': 0,
                            'raphiphop': 74.621743018604292,
                            'rock': 217.27551888821833},
+                           
+                           [alternative,folkcountry]
           
           
           'raphiphop': {         'alternative': 84.463404490202024,
@@ -105,6 +110,7 @@ A Content Based Recommendation System
                             'pop': 217.27551888821833,
                             'raphiphop': 229.82426241624168,
                             'rock': 0}
+                    [blues,alternative,pop,rapiphop,folkcountry,electronic,jazz]
                             
                             
  
@@ -114,4 +120,6 @@ A Content Based Recommendation System
 5. Analysis
    Gathering stats
    
+6. Instructions
+  g++  -g -O2   -o fextract  fextract.o  -lvorbisfile -lvorbis -lmarsyas -lmad -lasound
 
