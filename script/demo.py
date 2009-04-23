@@ -1,13 +1,17 @@
 import mad
 import ID3
 
+FORMAT_DESCRIPTOR = "#EXTM3U"
+RECORD_MARKER = "#EXTINF"
 
 def generate_list(name="songs_list.m3u", path=".", files=[],
                   sort=True, walk=False):
     """ generates the M3U playlist with the given file name
 
     and in the given path """
-
+    
+    prepath = os.getcwd()
+    os.chdir(path)
     fp = None
     try:
         try:
@@ -25,19 +29,27 @@ def generate_list(name="songs_list.m3u", path=".", files=[],
 
             if sort:
                 mp3_list.sort()
-
-            fp = file(name, "w")
+            
+            fp = open(name, "w")
             fp.write(FORMAT_DESCRIPTOR + "\n")
 
             for track in mp3_list:
-                if not walk:
-                    track = os.path.join(path, track)
-                else:
-                    track = os.path.abspath(track)
+                
+                
+                mp3file = track.file_name.split('/')
+                genre,song = mp3file[0],mp3file[1]
+                
+                track = os.path.abspath(track.file_name)
+                
                 # open the track with mad and ID3
                 mf = mad.MadFile(track)
                 id3info = ID3.ID3(track)
-        
+                try:
+                    id3info['GENRE'] = genre
+                    id3info.write()
+                except Exception,e:
+                    print e
+                        
                 # M3U format needs seconds but
                 # total_time returns milliseconds
                 # hence i convert them in seconds
@@ -62,7 +74,9 @@ def generate_list(name="songs_list.m3u", path=".", files=[],
     finally:
         if fp:
             fp.close()
-
+    
+    os.chdir(prepath)
+    
 
 
 if __name__ == "__main__":
@@ -111,7 +125,7 @@ if __name__ == "__main__":
         falter = model.get_audio_files(tag='alternative',limit= limit)
     
         files = [frock,fpop,fjazz,fblues,frap,felec,ffolk,falter]
-        files = [falter,frock,felec] 
+        files = [fblues,frock] 
 #        playlists = []
 #        for Files in files:
 #            n = raw_input('press Enter')
@@ -155,6 +169,8 @@ if __name__ == "__main__":
 #            
 #            p = PrettyPrinter(10)
 #            p.pprint(scores)
+        
+        
         pl = controller.add_playlist(user, name= str(random.randint(1,1000)) )
         
         for Files in files:
@@ -175,7 +191,14 @@ if __name__ == "__main__":
         for file in pl.files:
             print file
         print
+        generate_list(name='../script/'+ user.email + '.m3u', path= '/home/dinesh/important/mir/simreco/audio', files= pl.files)
+        
+        
         recs = user.recommend(playlists=[pl],topN=10)
+        Recfiles = []
         for score,file in recs:
                 print score,'\t\t',file
+                Recfiles.append(file)
+        
+        generate_list(name='../script/recs.m3u',path = '/home/dinesh/important/mir/simreco/audio',files = Recfiles)
     

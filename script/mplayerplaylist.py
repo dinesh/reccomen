@@ -52,7 +52,7 @@ def _usage():
 def generate_list(name="songs_list.m3u", path=".",
                   sort=True, walk=False):
     """ generates the M3U playlist with the given file name
-
+le(name, "w
     and in the given path """
 
     fp = None

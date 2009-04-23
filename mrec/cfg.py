@@ -1,4 +1,3 @@
-
 test_dataset = ''
 training_dataset = '/home/dinesh/important/mir/simreco/audio'
 vector_storage =      '/home/dinesh/important/mir/simreco/vectors'
